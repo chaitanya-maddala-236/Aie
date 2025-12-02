@@ -1,0 +1,263 @@
+Sudoku Solver (CSP Approach) 
+:- use_module(library(clpfd)). 
+sudoku(Rows) :- 
+append(Rows, Vs), Vs ins 1..9, 
+maplist(all_distinct, Rows), 
+transpose(Rows, Columns), 
+maplist(all_distinct, Columns), 
+Rows = [A,B,C,D,E,F,G,H,I], 
+blocks(A,B,C), blocks(D,E,F), blocks(G,H,I), 
+maplist(label, Rows), maplist(portray_clause, Rows). 
+blocks([],[],[]). 
+blocks([A,B,C|R1],[D,E,F|R2],[G,H,I|R3]) :- 
+all_distinct([A,B,C,D,E,F,G,H,I]), 
+blocks(R1,R2,R3). 
+Query: 
+sudoku([ 
+[5,3,_, _,7,_, _,_,_], 
+[6,_,_, 1,9,5, _,_,_], 
+[_,9,8, _,_,_, _,6,_], 
+[8,_,_, _,6,_, _,_,3], 
+[4,_,_, 8,_,3, _,_,1], 
+[7,_,_, _,2,_, _,_,6], 
+[_,6,_, _,_,_, 2,8,_], 
+[_,_,_, 4,1,9, _,_,5], 
+[_,_,_, _,8,_, _,7,9] 
+]). 
+Simple Facts and Queries 
+% Knowledge Base 
+male(ram). 
+male(rahul). 
+female(sita). 
+female(gita). 
+parent(ram, rahul). 
+parent(sita, rahul). 
+father(X,Y):- male(X), parent(X,Y). 
+mother(X,Y):- female(X), parent(X,Y). 
+Query: 
+father(sita, rahul). 
+Tower of Hanoi Prolog program 
+hanoi(1,From,To,_):- write(From -> To), nl. 
+hanoi(N,From,To,Aux):- 
+N>1, 
+M is N-1, 
+hanoi(M,From,Aux,To), 
+hanoi(1,From,To,_), 
+hanoi(M,Aux,To,From). 
+Query: 
+hanoi(3, left, right, middle). 
+Alpha-Beta Pruning: 
+% Simple game tree: tree(Node, Value, Children) 
+tree(a, _, [b, c]). 
+tree(b, _, [d, e]). 
+tree(c, _, [f, g]). 
+tree(d, 5, []). 
+tree(e, 3, []). 
+tree(f, 2, []). 
+tree(g, 9, []). 
+% Alpha-Beta search 
+alphabeta(Node, Alpha, Beta, true, Value) :-   % Maximizing 
+tree(Node, V, Children), 
+(Children = [] -> Value = V ; 
+max_list_alpha(Children, Alpha, Beta, -10000, Value) 
+). 
+alphabeta(Node, Alpha, Beta, false, Value) :-  % Minimizing 
+tree(Node, V, Children), 
+(Children = [] -> Value = V ; 
+min_list_alpha(Children, Alpha, Beta, 10000, Value) 
+). 
+% Maximizing helper 
+max_list_alpha([], _, _, Value, Value). 
+max_list_alpha([Child|Rest], Alpha, Beta, CurrentMax, Value) :- 
+alphabeta(Child, Alpha, Beta, false, ChildValue), 
+NewMax is max(CurrentMax, ChildValue), 
+NewAlpha is max(Alpha, NewMax), 
+(NewAlpha >= Beta -> Value = NewMax 
+; max_list_alpha(Rest, NewAlpha, Beta, NewMax, Value) 
+). 
+% Minimizing helper 
+min_list_alpha([], _, _, Value, Value). 
+min_list_alpha([Child|Rest], Alpha, Beta, CurrentMin, Value) :- 
+alphabeta(Child, Alpha, Beta, true, ChildValue), 
+NewMin is min(CurrentMin, ChildValue), 
+NewBeta is min(Beta, NewMin), 
+(NewBeta =< Alpha -> Value = NewMin 
+; min_list_alpha(Rest, Alpha, NewBeta, NewMin, Value) 
+). 
+Query: 
+alphabeta(a, -10000, 10000, true, Value). 
+Tic-Tac-Toe Minimax: 
+win(X,[X,X,X,_,_,_,_,_,_]). 
+win(X,[_,_,_,X,X,X,_,_,_]). 
+win(X,[_,_,_,_,_,_,X,X,X]). 
+win(X,[X,_,_,X,_,_,X,_,_]). 
+win(X,[_,X,_,_,X,_,_,X,_]). 
+win(X,[_,_,X,_,_,X,_,_,X]). 
+win(X,[X,_,_,_,X,_,_,_,X]). 
+win(X,[_,_,X,_,X,_,X,_,_]). 
+minimax(Board,X,BestMove,BestScore):- 
+findall(M,move(Board,M),Moves), 
+pick(Board,X,Moves,BestMove,BestScore). 
+move(Board,NewBoard):- nth0(I,Board,_,R), nth0(I,NewBoard,x,R). 
+Query: 
+win(o,[o,x,x,x,o,x,x,x,o]). 
+win(x,[x,x,x,_,_,_,_,_,_]). 
+N-Queens Program: 
+:- use_module(library(clpfd)). 
+n_queens(N, Sol) :- 
+length(Sol, N), 
+Sol ins 1..N, 
+all_distinct(Sol), 
+safe(Sol), 
+label(Sol). 
+safe([]). 
+safe([Q|T]) :- 
+safe(T), 
+no_attack(Q, T, 1). 
+no_attack(_, [], _). 
+no_attack(Q, [Q1|T], D) :- 
+Q #\= Q1, 
+abs(Q - Q1) #\= D, 
+D1 #= D + 1, 
+no_attack(Q, T, D1). 
+Query: 
+n_queens(6, Sol). 
+BFS and DFS for Maze: 
+% -------------------------- 
+% Maze Representation 
+% -------------------------- 
+% connected(X, Y) means you can move from X to Y 
+connected(a, b). 
+connected(a, e). 
+connected(b, d). 
+connected(d, f). 
+connected(e, f). 
+connected(f, goal). 
+% Make the graph undirected (optional) 
+path(X, Y) :- connected(X, Y). 
+path(X, Y) :- connected(Y, X). 
+% -------------------------- 
+% Depth First Search (DFS) 
+% -------------------------- 
+dfs(Start, Goal, Path) :- 
+dfs_helper(Start, Goal, [Start], Path). 
+dfs_helper(Goal, Goal, Visited, Path) :- 
+reverse(Visited, Path). 
+dfs_helper(Current, Goal, Visited, Path) :- 
+path(Current, Next), 
+\+ member(Next, Visited), 
+dfs_helper(Next, Goal, [Next|Visited], Path). 
+% -------------------------- 
+% Breadth First Search (BFS) 
+% -------------------------- 
+bfs(Start, Goal, Path) :- 
+bfs_queue([[Start]], Goal, Path). 
+bfs_queue([[Goal|Rest]|_], Goal, Path) :- 
+reverse([Goal|Rest], Path). 
+bfs_queue([[Current|Rest]|OtherPaths], Goal, Path) :- 
+findall([Next,Current|Rest], 
+( path(Current, Next), 
+\+ member(Next, [Current|Rest]) ), 
+NewPaths), 
+append(OtherPaths, NewPaths, UpdatedQueue), 
+bfs_queue(UpdatedQueue, Goal, Path). 
+% -------------------------- 
+% Efficiency Comparison 
+% -------------------------- 
+compare(Start, Goal) :- 
+dfs(Start, Goal, DFS_Path), 
+bfs(Start, Goal, BFS_Path), 
+length(DFS_Path, DFS_Len), 
+length(BFS_Path, BFS_Len), 
+write('DFS Path: '), write(DFS_Path), nl, 
+write('DFS Length: '), write(DFS_Len), nl, 
+write('BFS Path: '), write(BFS_Path), nl, 
+write('BFS Length: '), write(BFS_Len), nl, 
+( BFS_Len = DFS_Len -> 
+write('Both found an optimal path.') 
+; 
+). 
+write('BFS found the optimal (shortest) path.') 
+Query: 
+bfs(a,goal,Path). 
+8-Puzzle Solver + Comparison: 
+:- use_module(library(lists)). 
+% ----------------------------------------------------------- 
+% ABSOLUTE VALUE (portable for all Prolog systems) 
+% ----------------------------------------------------------- 
+abs_val(N, A) :- N >= 0, A is N. 
+abs_val(N, A) :- N < 0,  A is -N. 
+% ----------------------------------------------------------- 
+% MANHATTAN HEURISTIC 
+% ----------------------------------------------------------- 
+manhattan(State, D) :- man(State, 0, D). 
+man([], _, 0). 
+man([0|T], I, D) :-           
+I1 is I + 1, 
+man(T, I1, D). 
+man([H|T], I, D) :- 
+H > 0, 
+X  is ((H-1) mod 3),        
+Y  is ((H-1)//3),           
+X1 is (I mod 3),            
+Y1 is (I//3),               
+% skip blank 
+% goal X 
+% goal Y 
+% current X 
+% current Y 
+DX is X - X1, abs_val(DX, AX), 
+DY is Y - Y1, abs_val(DY, AY), 
+I1 is I + 1, 
+man(T, I1, D1), 
+D is D1 + AX + AY. 
+% ----------------------------------------------------------- 
+% SWAP LIST POSITIONS 
+% ----------------------------------------------------------- 
+swap_positions(L, I, J, R) :- 
+nth0(I, L, Xi), 
+nth0(J, L, Xj), 
+replace(L, I, Xj, T), 
+replace(T, J, Xi, R). 
+replace([_|T], 0, X, [X|T]). 
+replace([H|T], I, X, [H|R]) :- 
+I > 0, 
+I1 is I - 1, 
+replace(T, I1, X, R). 
+% ----------------------------------------------------------- 
+% VALID MOVES (NEIGHBORS OF THE BLANK) 
+% ----------------------------------------------------------- 
+move(State, Next) :- 
+nth0(Zero, State, 0), 
+neighbor(Zero, J), 
+swap_positions(State, Zero, J, Next). 
+neighbor(I, J) :- I >= 3,  J is I - 3.         
+neighbor(I, J) :- I =< 5,  J is I + 3.         
+% up 
+% down 
+neighbor(I, J) :- I mod 3 =\= 0, J is I - 1.   % left 
+neighbor(I, J) :- I mod 3 =\= 2, J is I + 1.   % right 
+% ----------------------------------------------------------- 
+% A* SEARCH 
+% ----------------------------------------------------------- 
+solve(Start, Goal, Path) :- 
+manhattan(Start, H0), 
+Open0 = [H0-[Start, [], 0]], 
+astar(Open0, Goal, Path). 
+astar([_F-[Goal, Path, _G] | _], Goal, Solution) :- 
+reverse([Goal|Path], Solution). 
+astar([_F-[State, Path, G] | Rest], Goal, Solution) :- 
+findall(F1-[Child, [State|Path], G1], 
+( move(State, Child), 
+\+ member(Child, Path),        
+% no cycles 
+manhattan(Child, H), 
+G1 is G + 1, 
+F1 is G1 + H 
+), 
+Children), 
+append(Rest, Children, Open1), 
+keysort(Open1, Open2), 
+astar(Open2, Goal, Solution). 
+Query: 
+solve([1,2,3,4,0,6,7,5,8], [1,2,3,4,5,6,7,8,0], Path). 
