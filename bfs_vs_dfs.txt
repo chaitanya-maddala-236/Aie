@@ -1,0 +1,41 @@
+edge(a,b).
+edge(a,c).
+edge(b,d).
+edge(b,e).
+edge(c,f).
+edge(c,g).
+
+
+% DFS: Goal found when Start = Goal
+dfs(Start, Goal, Path) :- dfs_helper(Start, Goal, [Start], Path).
+
+dfs_helper(Goal, Goal, Visited, Path) :-
+    reverse(Visited, Path).
+
+dfs_helper(Current, Goal, Visited, Path) :-
+    edge(Current, Next),
+    \+ member(Next, Visited),
+    dfs_helper(Next, Goal, [Next|Visited], Path).
+
+?- dfs(a, e, Path).
+Path = [a, b, e].
+
+% BFS uses a queue of paths
+bfs(Start, Goal, Path) :-
+    bfs_queue([[Start]], Goal, Path).
+
+bfs_queue([[Goal|Rest] | _], Goal, Path) :-
+    reverse([Goal|Rest], Path).
+
+bfs_queue([[Current|Rest] | Others], Goal, Path) :-
+    findall([Next,Current|Rest],
+            (edge(Current, Next), \+ member(Next, [Current|Rest])),
+            NewPaths),
+    append(Others, NewPaths, UpdatedQueue),
+    bfs_queue(UpdatedQueue, Goal, Path).
+
+?- bfs(a, e, Path).
+Path = [a, b, e].
+
+
+
